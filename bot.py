@@ -1,17 +1,19 @@
 import logging
 import os
 import sys
+from http import HTTPStatus
 
-import requests
-from aiogram import Bot, Dispatcher, executor, Router, types
-from aiogram.filters import Text
+import httpx
+from aiogram import Bot, Dispatcher, Router, types
+from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from dotenv import load_dotenv
 
-from .constants import GENRES, URL
-from .utils import make_inline_keyboard
+from constants import GENRES, URL
+from exceptions import ResponseStatusException
+from utils import make_inline_keyboard
 
 load_dotenv()
 
@@ -38,26 +40,44 @@ class MovieForm(StatesGroup):
 
 async def get_movies(genre):
     """Получение 5 фильмов по жанру через внешний api"""
+    logger.debug('Запрос на внешний api.')
     headers = {'X-API-KEY': API_TOKEN}
     params = {
-        "genres.name": genre,
-        "limit": 5,
-        "selectFields": ["name", "year", "rating.kp"]
+        'genres.name': genre,
+        'limit': 5,
+        'selectFields': ['name', 'year']
     }
     try:
-        response = requests.get(URL, headers=headers, params=params)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(URL, headers=headers, params=params)
+        response_status = response.status_code
+        if response_status != HTTPStatus.OK:
+            raise ResponseStatusException(
+                f'Статус ответа: {response_status}. Ожидается 200.'
+            )
+        logger.debug('Успешное завершение получения ответа.')
         return response.json()
     except Exception as e:
-        logging.error(f'Ошибка при запросе к API {e}')
+        logger.error(f'Ошибка при запросе к API: {e}')
         return []
 
 
-@router.message(commands=['start'])
+async def check_response(response):
+    """Проверка ответа на соответствие документации"""
+    logger.debug('Начало проверки ответа API.')
+    if not isinstance(response, dict):
+        raise TypeError(
+            f'Тип данных ответа {type(response)}. Ожидается dict.'
+        )
+    logger.debug('Успешное завершение проверки.')
+
+
+@router.message(Command('start'))
 async def start(message: types.Message, state: FSMContext):
     """Начало диалога"""
     await message.answer(
         'Привет, я помогу выбрать фильм!'
-        'Какие жанры тебя интересуют?',
+        'Какой жанр тебя интересует?',
         reply_markup=make_inline_keyboard()
     )
     await state.set_state(MovieForm.choose_genre)
@@ -65,23 +85,36 @@ async def start(message: types.Message, state: FSMContext):
 
 @router.callback_query(MovieForm.choose_genre)
 async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
-    """Обработка выбора жанра"""
+    """Обработка выбора жанра и выдача рекомендаций"""
+    try:
+        genre = callback.data
+        genre_ru = GENRES.get(genre)
 
-    genre = callback.data
-    genre_ru = GENRES.get(genre)
+        movies = get_movies(genre)
+        check_response(movies)
 
-    movies = get_movies(genre)
+        message_text = f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
 
-    message_text = f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
+        for idx, movie in enumerate(movies):
+            rating = movie.get('rating', {}).get('kp')
+            message_text += (
+                f'{idx}. {movie["name"]}, {movie["year"]}\n'
+                f'★ Рейтинг: {rating}/10\n\n'
+            )
 
-    for idx, movie in enumerate(movies):
-        rating = movie.get('rating')
-        message_text += (
-            f'{idx}. {movie["name"]}\n'
-            f'★ Рейтинг: {rating}/10\n\n'
-        )
+        if not (isinstance(callback.message, types.Message)):
+            raise TypeError('Сообщение недоступно для редактированиияю')
 
-    await callback.message.edit_text(
-        text=message_text
-    )
-    await state.clear()
+        await callback.message.edit_text(text=message_text)
+        await state.clear()
+    except Exception as e:
+        logger.error(f'Ошибка: {e}')
+        await callback.answer('Что-то пошло не так...')
+
+
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
