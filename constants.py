@@ -1,16 +1,16 @@
 # URL API Кинопоиска
-URL = 'https://api.kinopoisk.dev/v1.4/movie/'
+URL = 'https://api.kinopoisk.dev/v1.4/movie'
 
 # Список жанров (ответ API)
 GENRES_LIST = [
-  {
-    "name": "аниме",
-    "slug": "anime"
-  },
-  {
-    "name": "биография",
-    "slug": "biografiya"
-  },
+#   {
+#     "name": "аниме",
+#     "slug": "anime"
+#   },
+#   {
+#     "name": "биография",
+#     "slug": "biografiya"
+#   },
   {
     "name": "боевик",
     "slug": "boevik"
@@ -19,22 +19,22 @@ GENRES_LIST = [
     "name": "вестерн",
     "slug": "vestern"
   },
-  {
-    "name": "военный",
-    "slug": "voennyy"
-  },
+#   {
+#     "name": "военный",
+#     "slug": "voennyy"
+#   },
   {
     "name": "детектив",
     "slug": "detektiv"
   },
-  {
-    "name": "детский",
-    "slug": "detskiy"
-  },
-  {
-    "name": "для взрослых",
-    "slug": "dlya-vzroslyh"
-  },
+#   {
+#     "name": "детский",
+#     "slug": "detskiy"
+#   },
+#   {
+#     "name": "для взрослых",
+#     "slug": "dlya-vzroslyh"
+#   },
   {
     "name": "документальный",
     "slug": "dokumentalnyy"
@@ -43,70 +43,70 @@ GENRES_LIST = [
     "name": "драма",
     "slug": "drama"
   },
-  {
-    "name": "игра",
-    "slug": "igra"
-  },
-  {
-    "name": "история",
-    "slug": "istoriya"
-  },
+#   {
+#     "name": "игра",
+#     "slug": "igra"
+#   },
+#   {
+#     "name": "история",
+#     "slug": "istoriya"
+#   },
   {
     "name": "комедия",
     "slug": "komediya"
   },
-  {
-    "name": "концерт",
-    "slug": "koncert"
-  },
-  {
-    "name": "короткометражка",
-    "slug": "korotkometrazhka"
-  },
+#   {
+#     "name": "концерт",
+#     "slug": "koncert"
+#   },
+#   {
+#     "name": "короткометражка",
+#     "slug": "korotkometrazhka"
+#   },
   {
     "name": "криминал",
     "slug": "kriminal"
   },
-  {
-    "name": "мелодрама",
-    "slug": "melodrama"
-  },
-  {
-    "name": "музыка",
-    "slug": "muzyka"
-  },
-  {
-    "name": "мультфильм",
-    "slug": "multfilm"
-  },
-  {
-    "name": "мюзикл",
-    "slug": "myuzikl"
-  },
-  {
-    "name": "новости",
-    "slug": "novosti"
-  },
+#   {
+#     "name": "мелодрама",
+#     "slug": "melodrama"
+#   },
+#   {
+#     "name": "музыка",
+#     "slug": "muzyka"
+#   },
+#   {
+#     "name": "мультфильм",
+#     "slug": "multfilm"
+#   },
+#   {
+#     "name": "мюзикл",
+#     "slug": "myuzikl"
+#   },
+#   {
+#     "name": "новости",
+#     "slug": "novosti"
+#   },
   {
     "name": "приключения",
     "slug": "priklyucheniya"
   },
-  {
-    "name": "реальное ТВ",
-    "slug": "realnoe-TV"
-  },
-  {
-    "name": "семейный",
-    "slug": "semeynyy"
-  },
-  {
-    "name": "спорт",
-    "slug": "sport"
-  },
-  {
-    "name": "ток-шоу",
-    "slug": "tok-shou"
-  },
+#   {
+#     "name": "реальное ТВ",
+#     "slug": "realnoe-TV"
+#   },
+#   {
+#     "name": "семейный",
+#     "slug": "semeynyy"
+#   },
+#   {
+#     "name": "спорт",
+#     "slug": "sport"
+#   },
+#   {
+#     "name": "ток-шоу",
+#     "slug": "tok-shou"
+#   },
   {
     "name": "триллер",
     "slug": "triller"
@@ -119,18 +119,18 @@ GENRES_LIST = [
     "name": "фантастика",
     "slug": "fantastika"
   },
-  {
-    "name": "фильм-нуар",
-    "slug": "film-nuar"
-  },
+#   {
+#     "name": "фильм-нуар",
+#     "slug": "film-nuar"
+#   },
   {
     "name": "фэнтези",
     "slug": "fentezi"
   },
-  {
-    "name": "церемония",
-    "slug": "ceremoniya"
-  }
+#   {
+#     "name": "церемония",
+#     "slug": "ceremoniya"
+#   }
 ]
 
 # Преобразование списка жанров в другой формат

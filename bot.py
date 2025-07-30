@@ -41,14 +41,20 @@ class MovieForm(StatesGroup):
 async def get_movies(genre):
     """Получение 5 фильмов по жанру через внешний api"""
     logger.debug('Запрос на внешний api.')
-    headers = {'X-API-KEY': API_TOKEN}
-    params = {
-        'genres.name': genre,
-        'limit': 5,
-        'selectFields': ['name', 'year']
+    headers = {
+        'X-API-KEY': API_TOKEN,
+        'accept': 'application/json'
     }
+    params = {
+        'page': 1,
+        'limit': 5,
+        'selectFields': 'name',
+        'type': 'movie',
+        'genres.name': genre
+    }
+    print(f"Full URL: {URL}?{'&'.join(f'{k}={v}' for k,v in params.items())}")
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(URL, headers=headers, params=params)
         response_status = response.status_code
         if response_status != HTTPStatus.OK:
@@ -69,6 +75,15 @@ async def check_response(response):
         raise TypeError(
             f'Тип данных ответа {type(response)}. Ожидается dict.'
         )
+
+    if 'docs' not in response:
+        raise KeyError('В ответе нет ключа "docs".')
+
+    if not isinstance(response['docs'], list):
+        raise TypeError(
+            f'Тип данных ответа {type(response["docs"])}. Ожидается list.'
+        )
+
     logger.debug('Успешное завершение проверки.')
 
 
@@ -90,23 +105,25 @@ async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
         genre = callback.data
         genre_ru = GENRES.get(genre)
 
-        movies = get_movies(genre)
-        check_response(movies)
+        movies = await get_movies(genre)
+        await check_response(movies)
 
         message_text = f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
 
-        for idx, movie in enumerate(movies):
-            rating = movie.get('rating', {}).get('kp')
+        for idx, movie in enumerate(movies['docs'], 1):
+            # rating = movie.get('rating', {}).get('kp')
             message_text += (
                 f'{idx}. {movie["name"]}, {movie["year"]}\n'
-                f'★ Рейтинг: {rating}/10\n\n'
+                # f'★ Рейтинг: {rating}/10\n\n'
             )
 
         if not (isinstance(callback.message, types.Message)):
             raise TypeError('Сообщение недоступно для редактированиияю')
 
         await callback.message.edit_text(text=message_text)
+        await callback.answer()
         await state.clear()
+
     except Exception as e:
         logger.error(f'Ошибка: {e}')
         await callback.answer('Что-то пошло не так...')
