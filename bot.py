@@ -52,7 +52,6 @@ async def get_movies(genre):
         'type': 'movie',
         'genres.name': genre
     }
-    print(f"Full URL: {URL}?{'&'.join(f'{k}={v}' for k,v in params.items())}")
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(URL, headers=headers, params=params)
