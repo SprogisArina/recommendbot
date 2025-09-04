@@ -43,12 +43,12 @@ async def get_movies(genre):
     logger.debug('Запрос на внешний api.')
     headers = {
         'X-API-KEY': API_TOKEN,
-        'accept': 'application/json'
+        'Accept': 'application/json'
     }
     params = {
         'page': 1,
         'limit': 5,
-        'selectFields': 'name',
+        'selectFields': ['id', 'name', 'year'],
         'type': 'movie',
         'genres.name': genre
     }
@@ -64,7 +64,6 @@ async def get_movies(genre):
         return response.json()
     except Exception as e:
         logger.error(f'Ошибка при запросе к API: {e}')
-        return []
 
 
 async def check_response(response):
@@ -104,7 +103,7 @@ async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
         genre = callback.data
         genre_ru = GENRES.get(genre)
 
-        movies = await get_movies(genre)
+        movies = await get_movies(genre_ru)
         await check_response(movies)
 
         message_text = f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
