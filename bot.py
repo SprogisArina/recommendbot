@@ -39,7 +39,7 @@ class MovieForm(StatesGroup):
 
 
 async def get_movies(genre):
-    """Получение 5 фильмов по жанру через внешний api"""
+    """Получение 10 фильмов по жанру через внешний api"""
     logger.debug('Запрос на внешний api.')
     headers = {
         'X-API-KEY': API_TOKEN,
@@ -47,8 +47,8 @@ async def get_movies(genre):
     }
     params = {
         'page': 1,
-        'limit': 5,
-        'selectFields': ['id', 'name', 'year'],
+        'limit': 10,
+        'selectFields': ['name', 'year', 'rating'],
         'type': 'movie',
         'genres.name': genre
     }
@@ -89,7 +89,7 @@ async def check_response(response):
 async def start(message: types.Message, state: FSMContext):
     """Начало диалога"""
     await message.answer(
-        'Привет, я помогу выбрать фильм!'
+        'Привет, я помогу выбрать фильм!\n'
         'Какой жанр тебя интересует?',
         reply_markup=make_inline_keyboard()
     )
@@ -106,13 +106,15 @@ async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
         movies = await get_movies(genre_ru)
         await check_response(movies)
 
+        logger.debug(movies)
+
         message_text = f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
 
         for idx, movie in enumerate(movies['docs'], 1):
-            # rating = movie.get('rating', {}).get('kp')
+            rating_imdb = movie.get('rating', {}).get('imdb')
             message_text += (
                 f'{idx}. {movie["name"]}, {movie["year"]}\n'
-                # f'★ Рейтинг: {rating}/10\n\n'
+                f'★ Рейтинг imdb: {rating_imdb}/10\n\n'
             )
 
         if not (isinstance(callback.message, types.Message)):
