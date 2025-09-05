@@ -1,5 +1,5 @@
 # URL API Кинопоиска
-URL = 'https://api.kinopoisk.dev/v1.4/movie'
+URL = 'https://api.kinopoisk.dev/v1.4/movie/random'
 
 # Список жанров (ответ API)
 GENRES_LIST = [

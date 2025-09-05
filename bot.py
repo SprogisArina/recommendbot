@@ -46,9 +46,7 @@ async def get_movies(genre):
         'Accept': 'application/json'
     }
     params = {
-        'page': 1,
-        'limit': 10,
-        'selectFields': ['name', 'year', 'rating'],
+        'notNullFields': ['name', 'year', 'rating.imdb'],
         'type': 'movie',
         'genres.name': genre
     }
@@ -74,13 +72,11 @@ async def check_response(response):
             f'Тип данных ответа {type(response)}. Ожидается dict.'
         )
 
-    if 'docs' not in response:
-        raise KeyError('В ответе нет ключа "docs".')
-
-    if not isinstance(response['docs'], list):
-        raise TypeError(
-            f'Тип данных ответа {type(response["docs"])}. Ожидается list.'
-        )
+    for key in ('name', 'rating', 'year', 'description'):
+        if key not in response:
+            raise KeyError(
+                f'В отвере нет ключа {key}.'
+            )
 
     logger.debug('Успешное завершение проверки.')
 
@@ -103,22 +99,23 @@ async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
         genre = callback.data
         genre_ru = GENRES.get(genre)
 
-        movies = await get_movies(genre_ru)
-        await check_response(movies)
+        movie_data = await get_movies(genre_ru)
+        await check_response(movie_data)
 
-        logger.debug(movies)
+        logger.debug(movie_data)
 
-        message_text = f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
+        rating_imdb = movie_data.get('rating').get('imdb')
 
-        for idx, movie in enumerate(movies['docs'], 1):
-            rating_imdb = movie.get('rating', {}).get('imdb')
-            message_text += (
-                f'{idx}. {movie["name"]}, {movie["year"]}\n'
-                f'★ Рейтинг imdb: {rating_imdb}/10\n\n'
-            )
+        message_text = (
+            f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
+            f'{movie_data["name"]}, {movie_data["year"]}\n'
+            # f'Страна:{movie_data.get("")}'
+            f'★ Рейтинг imdb: {rating_imdb}/10\n\n'
+            f'Описание: {movie_data["description"] or "нет описания"}'
+        )
 
         if not (isinstance(callback.message, types.Message)):
-            raise TypeError('Сообщение недоступно для редактированиияю')
+            raise TypeError('Сообщение недоступно для редактирования')
 
         await callback.message.edit_text(text=message_text)
         await callback.answer()
