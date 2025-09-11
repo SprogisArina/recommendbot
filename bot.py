@@ -102,7 +102,7 @@ async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
         movie_data = await get_movies(genre_ru)
         await check_response(movie_data)
 
-        logger.debug(movie_data)
+        # logger.debug(movie_data)
 
         rating_imdb = movie_data.get('rating').get('imdb')
 
@@ -111,15 +111,19 @@ async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
             f'{movie_data["name"]}, {movie_data["year"]}\n'
             # f'Страна:{movie_data.get("")}'
             f'★ Рейтинг imdb: {rating_imdb}/10\n\n'
-            f'Описание: {movie_data["description"] or "нет описания"}'
+            f'Описание: {movie_data["description"] or "прости, нет описания"}'
         )
 
         if not (isinstance(callback.message, types.Message)):
             raise TypeError('Сообщение недоступно для редактирования')
 
-        await callback.message.edit_text(text=message_text)
+        await callback.message.edit_text(
+            text=message_text,
+            reply_markup=make_inline_keyboard()
+        )
         await callback.answer()
-        await state.clear()
+        # await state.clear()
+        await state.set_state(MovieForm.choose_genre)
 
     except Exception as e:
         logger.error(f'Ошибка: {e}')
