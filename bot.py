@@ -96,7 +96,7 @@ async def start(message: types.Message, state: FSMContext):
 async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
     """Обработка выбора жанра и выдача рекомендаций"""
     try:
-        genre = callback.data
+        genre = str(callback.data)
         genre_ru = GENRES.get(genre)
 
         movie_data = await get_movies(genre_ru)
