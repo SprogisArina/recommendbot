@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 from constants import GENRES, URL
 from exceptions import ResponseStatusException
-from utils import make_inline_keyboard
+from utils import format_countries, make_inline_keyboard
 
 load_dotenv()
 
@@ -105,13 +105,16 @@ async def handle_genre(callback: types.CallbackQuery, state: FSMContext):
         # logger.debug(movie_data)
 
         rating_imdb = movie_data.get('rating').get('imdb')
+        countries = movie_data.get('countries', [])
+        countries_str = format_countries(countries)
 
         message_text = (
             f'Рекомендую посмотреть в жанре {genre_ru}:\n\n'
             f'{movie_data["name"]}, {movie_data["year"]}\n'
-            # f'Страна:{movie_data.get("")}'
+            f'Страна: {countries_str}\n'
             f'★ Рейтинг imdb: {rating_imdb}/10\n\n'
-            f'Описание: {movie_data["description"] or "прости, нет описания"}'
+            f'Описание: {movie_data["description"] or "нет описания"}\n\n'
+            'Попробуй другие жанры:'
         )
 
         if not (isinstance(callback.message, types.Message)):
