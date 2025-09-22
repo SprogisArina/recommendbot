@@ -1,17 +1,17 @@
-from aiogram.types.inline_keyboard_markup import InlineKeyboardMarkup
 from aiogram.types.inline_keyboard_button import InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from constants import GENRES
 
 
 def make_inline_keyboard():
     """Клавиатура с жанрами"""
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(
-                text=genre, callback_data=f'{key}'
-            ) for key, genre in GENRES.items()]
-        ])
+    builder = InlineKeyboardBuilder()
+    builder.add(*[InlineKeyboardButton(
+        text=genre, callback_data=f'{slug}'
+        ) for slug, genre in GENRES.items()])
+    builder.adjust(3)
+    return builder.as_markup()
 
 
 def format_countries(countries):
